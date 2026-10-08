@@ -2,6 +2,8 @@
 
 This project contains a parametric OpenSCAD model of an 85 x 55 mm business card. The card has a raised border, raised text, and a scannable QR code on the front. With an AMS, you can also print a contact QR code into the back of the card. Scanning it offers to save the contact on the phone. You can print the card in one color or two colors.
 
+The project also includes a desk stand that holds a stack of cards.
+
 ## Files
 
 | Path                       | Description                                                                                                 |
@@ -16,6 +18,8 @@ This project contains a parametric OpenSCAD model of an 85 x 55 mm business card
 | `business_card_body.stl`   | Multi-color export: card body.                                                                              |
 | `business_card_accent.stl` | Multi-color export: raised text and front QR code.                                                          |
 | `business_card_back.stl`   | Multi-color export: contact QR code inlaid into the back.                                                   |
+| `card_holder.scad`         | OpenSCAD model of the desk stand for a stack of cards.                                                      |
+| `card_holder.stl`          | Desk stand export.                                                                                          |
 
 The STL files are generated, so `.gitignore` excludes them. To create them, see [Export STL files](#export-stl-files).
 
@@ -162,6 +166,29 @@ After printing, scan both QR codes with a phone camera in good light. The back c
 - Set the error correction parameter to `"H"` if the content is short enough to keep the squares large.
 - Remove any stringing between the QR squares.
 - If dark squares on the back merge, increase `back_qr_shrink` to 0.1.
+
+## Card holder
+
+`card_holder.scad` is a desk stand for a stack of cards. The cards stand on their long edge and lean back 15 degrees. A low 5 mm front lip covers only the border of the front card, so its text and QR code stay visible.
+
+The default pocket holds 10 cards. Change `card_count` for a larger or smaller stack. If you change the card size in `business_card.scad`, also change `card_width`, `card_height`, and `card_thickness` in `card_holder.scad`.
+
+If the cards fit too tightly or too loosely, adjust these clearances:
+
+- `width_clearance`: the gap at each end of the cards. The default is 0.6 mm.
+- `stack_clearance`: the total gap in front of and behind the stack. The default is 1.5 mm.
+
+To export and print the holder:
+
+1. Export the STL:
+
+   ```sh
+   openscad -o card_holder.stl card_holder.scad
+   ```
+
+1. In Bambu Studio, import `card_holder.stl`. It's already in the print orientation, with the open pocket facing up.
+1. Use the [recommended settings](#recommended-settings) in one color. The holder prints without supports.
+1. Click **Slice plate**, and then click **Print plate**.
 
 ## Licenses
 
