@@ -100,7 +100,7 @@ module card_body() {
                 rounded_rect(card_width - 2 * border_width,
                              card_height - 2 * border_width,
                              max(corner_radius - border_width, 0));
-        if (back_qr_enabled && part != "all")
+        if (back_qr_enabled && (part != "all" || $preview))
             translate([0, 0, -eps])
                 linear_extrude(back_inlay_depth + eps)
                     back_qr();
@@ -180,4 +180,6 @@ module accent() {
 
 if (part == "all" || part == "body")   color(body_color)   card_body();
 if (part == "all" || part == "accent") color(accent_color) accent();
-if (back_qr_enabled && part == "back") color(accent_color) back_inlay();
+// The single-color export omits the back code because it would be invisible in one color.
+if (back_qr_enabled && (part == "back" || (part == "all" && $preview)))
+    color(accent_color) back_inlay();
