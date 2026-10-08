@@ -1,0 +1,5 @@
+# ignore generated stl files
+*.stl
+
+# personal details; see personal.example.scad
+personal.scad
