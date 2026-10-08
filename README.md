@@ -2,7 +2,7 @@
 
 This project contains a parametric OpenSCAD model of an 85 x 55 mm business card. The card has a raised border, raised text, and a scannable QR code on the front. With an AMS, you can also print a contact QR code into the back of the card. Scanning it offers to save the contact on the phone. You can print the card in one color or two colors.
 
-The project also includes a desk stand that holds a stack of cards.
+The project also includes a desk stand that holds a stack of cards, and a carry case for a bag or purse.
 
 ## Files
 
@@ -20,6 +20,10 @@ The project also includes a desk stand that holds a stack of cards.
 | `business_card_back.stl`   | Multi-color export: contact QR code inlaid into the back.                                                   |
 | `card_holder.scad`         | OpenSCAD model of the desk stand for a stack of cards.                                                      |
 | `card_holder.stl`          | Desk stand export.                                                                                          |
+| `card_case.scad`           | OpenSCAD model of the carry case: a base tray and a friction-fit lid.                                       |
+| `card_case.stl`            | Carry case single-color export, with both parts laid out for printing.                                      |
+| `card_case_body.stl`       | Carry case multi-color export: both case parts.                                                             |
+| `card_case_inlay.stl`      | Carry case multi-color export: the name and the contact QR code.                                            |
 
 The STL files are generated, so `.gitignore` excludes them. To create them, see [Export STL files](#export-stl-files).
 
@@ -189,6 +193,55 @@ To export and print the holder:
 1. In Bambu Studio, import `card_holder.stl`. It's already in the print orientation, with the open pocket facing up.
 1. Use the [recommended settings](#recommended-settings) in one color. The holder prints without supports.
 1. Click **Slice plate**, and then click **Print plate**.
+
+## Carry case
+
+`card_case.scad` is a two-part case for carrying cards in a bag or purse. A lid slides over a lip on the base tray and holds by friction, so the outside is flush when the case is closed. With the default 10 cards, the case is 90 x 60 x 23.4 mm.
+
+The base walls are lower than the card stack. When you remove the lid, the top of the stack sticks out of the base so that you can grip the cards.
+
+With an AMS, the case can also show two flush inlays. The lid shows `name_text`, and the bottom of the base shows the same contact QR code as the back of the card. Both outer faces print against the build plate, so the inlays are mirrored in the model and read correctly from outside.
+
+The case uses these parameters:
+
+- `card_count`: the number of cards that the case holds.
+- `fit_clearance`: the gap between the lip and the lid, per side. The default is 0.15 mm. Increase it if the lid is too tight, or decrease it if the lid falls off.
+- `base_fraction`: how much of the inner height is in the base. Lower values let more of the stack stick out.
+- `name_size`: the size of the name on the lid. With longer names, reduce it so that the name fits on the 90 mm lid.
+- `qr_size`: the size of the QR code on the base. The default is 45 mm.
+- `part`: set to `"assembled"` to preview the closed case with the inlays.
+
+### Print the case in one color
+
+The single-color export has no inlays.
+
+1. Export the STL. The file contains the base and the lid side by side, with the lid upside down:
+
+   ```sh
+   openscad -o card_case.stl card_case.scad
+   ```
+
+1. In Bambu Studio, import `card_case.stl`.
+1. Use the [recommended settings](#recommended-settings). Both parts print without supports.
+1. Click **Slice plate**, and then click **Print plate**.
+
+### Print the case with inlays (AMS)
+
+1. Export the two STLs:
+
+   ```sh
+   openscad -D 'part="body"'  -o card_case_body.stl  card_case.scad
+   openscad -D 'part="inlay"' -o card_case_inlay.stl card_case.scad
+   ```
+
+1. In Bambu Studio, select **File** > **Import** > **Import 3MF/STL/STEP/SVG/OBJ/AMF**, select both STL files, and click **Open**.
+1. When Bambu Studio asks whether to load the files as a single object with multiple parts, click **Yes**.
+1. Set `card_case_body` to the light filament and `card_case_inlay` to the dark filament.
+1. Use the [recommended settings](#recommended-settings), and click **Slice plate**.
+1. In the **Preview** tab, drag the layer slider to the first layer and check that the name and the QR code show the dark color.
+1. Click **Print plate**.
+
+The friction fit depends on your printer and filament. Before you print more cases, test the fit and adjust `fit_clearance` in steps of 0.05 mm.
 
 ## Licenses
 
