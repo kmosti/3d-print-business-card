@@ -8,6 +8,7 @@ This project contains a parametric OpenSCAD model of an 85 x 55 mm business card
 | -------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `business_card.scad`       | OpenSCAD model. Layout and print parameters are at the top of the file.                                     |
 | `personal.example.scad`    | Fictional personal details. Copy it to `personal.scad`.                                                     |
+| `contact.scad`             | Loads the personal details and builds the contact card for the QR codes. Used by the card and the case.     |
 | `personal.scad`            | Your personal details: name, text lines, phone, email, and QR content. Ignored by git.                      |
 | `fonts/`                   | Inter Bold and Inter SemiBold text fonts, and the Font Awesome 6 Free Solid icon font, loaded by the model. |
 | `lib/qr.scad`              | [scadqr](https://github.com/xypwn/scadqr) library that generates the QR code.                               |
