@@ -68,7 +68,7 @@ Each extra field makes the code denser. With name, phone, and email, the 45 mm c
 
 The code is mirrored in the model so that it reads correctly from the back. The `back_qr_shrink` parameter makes the dark squares slightly smaller to compensate for the squashed first layer. Set `back_qr_enabled = false` to remove the back code.
 
-The back code is part of the multi-color export only. The F5 preview of `part = "all"` doesn't show it. To preview it, set `part = "back"`.
+The back code is part of the multi-color export only.
 
 ## Export STL files
 
