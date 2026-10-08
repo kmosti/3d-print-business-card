@@ -52,6 +52,8 @@ Keep `qr_message` short. Longer messages produce a denser QR code with smaller s
 
 If you change text sizes, check the preview to make sure that no text overlaps the border or the QR code.
 
+To show the subtitle on several lines, set `subtitle_text` to a list of strings, for example `["First line", "Second line"]`. There is room for two subtitle lines above the front QR code.
+
 The phone and email lines sit to the left of the QR code. Keep a gap of at least 3 mm between the end of the email line and the QR code, because QR scanners need a blank margin around the code. If you use a longer email address, reduce `contact_size`.
 
 The phone and email icons come from the Font Awesome icon font, because OpenSCAD can't turn color emoji into 3D shapes. To use a different icon, set `phone_icon` or `email_icon` to the icon's Unicode code point from the [Font Awesome icon gallery](https://fontawesome.com/search?ic=free&s=solid), for example `"\uf3cd"` for a mobile phone.

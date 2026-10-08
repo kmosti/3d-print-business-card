@@ -3,7 +3,7 @@
 // Front text
 name_text     = "JORDAN EXAMPLE";
 title_text    = "People & Culture";
-subtitle_text = "Organisational Development";
+subtitle_text = ["Organisational Development", "for small teams"];  // a string, or a list for several lines
 phone_text    = "+47 000 00 000";
 email_text    = "jordan@example.com";
 

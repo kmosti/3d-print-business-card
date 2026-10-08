@@ -42,6 +42,10 @@ text_margin = 5;        // left margin from the inner edge of the border
 name_y      = card_height - 11;  // text baselines
 title_y     = name_y - 7.5;
 subtitle_y  = title_y - 5;
+subtitle_line_spacing = 4.5;
+
+// OpenSCAD text() can't break lines, so a list of strings gives one line each.
+subtitle_lines = is_list(subtitle_text) ? subtitle_text : [subtitle_text];
 
 /* [QR code] */
 qr_error_correction = "M";  // [L, M, Q, H]
@@ -141,7 +145,9 @@ module card_text() {
     x = border_width + text_margin;
     translate([x, name_y])     text(name_text,     size = name_size,     font = name_font);
     translate([x, title_y])    text(title_text,    size = title_size,    font = body_font);
-    translate([x, subtitle_y]) text(subtitle_text, size = subtitle_size, font = body_font);
+    for (i = [0 : len(subtitle_lines) - 1])
+        translate([x, subtitle_y - i * subtitle_line_spacing])
+            text(subtitle_lines[i], size = subtitle_size, font = body_font);
     contact_line(phone_icon, phone_text, phone_y);
     contact_line(email_icon, email_text, email_y);
 }
