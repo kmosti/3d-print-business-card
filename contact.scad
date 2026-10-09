@@ -13,7 +13,6 @@ vcard = str(
     "FN:", vcard_first_name, " ", vcard_last_name, "\n",
     vcard_field("ORG", vcard_org),
     vcard_field("TITLE", vcard_title),
-    vcard_field("TEL", phone_text),
     vcard_field("EMAIL", email_text),
     vcard_field("URL", vcard_url),
     "END:VCARD"
