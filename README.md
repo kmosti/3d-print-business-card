@@ -1,254 +1,167 @@
 # 3D-printed business card
 
-This project contains a parametric OpenSCAD model of an 85 x 55 mm business card. The card has a raised border, raised text, and a scannable QR code on the front. With an AMS, you can also print a contact QR code into the back of the card. Scanning it offers to save the contact on the phone. You can print the card in one color or two colors.
-
-The project also includes a desk stand that holds a stack of cards, and a carry case for a bag or purse.
+Parametric OpenSCAD models for an 85 x 55 mm business card, a desk stand, and a carry case. The card has raised text and an optional contact QR code on the back. Scanning the code offers to save the contact on the phone.
 
 ## Files
 
-| Path                       | Description                                                                                                 |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `business_card.scad`       | OpenSCAD model. Layout and print parameters are at the top of the file.                                     |
-| `personal.example.scad`    | Fictional personal details. Copy it to `personal.scad`.                                                     |
-| `contact.scad`             | Loads the personal details and builds the contact card for the QR codes. Used by the card and the case.     |
-| `personal.scad`            | Your personal details: name, text lines, phone, email, and QR content. Ignored by git.                      |
-| `fonts/`                   | Inter Bold and Inter SemiBold text fonts, and the Font Awesome 6 Free Solid icon font, loaded by the model. |
-| `lib/qr.scad`              | [scadqr](https://github.com/xypwn/scadqr) library that generates the QR code.                               |
-| `business_card.stl`        | Single-color export.                                                                                        |
-| `business_card_body.stl`   | Multi-color export: card body.                                                                              |
-| `business_card_accent.stl` | Multi-color export: raised text and front QR code.                                                          |
-| `business_card_back.stl`   | Multi-color export: contact QR code inlaid into the back.                                                   |
-| `card_holder.scad`         | OpenSCAD model of the desk stand for a stack of cards.                                                      |
-| `card_holder.stl`          | Desk stand export.                                                                                          |
-| `card_case.scad`           | OpenSCAD model of the carry case: a base tray and a friction-fit lid.                                       |
-| `card_case.stl`            | Carry case single-color export, with both parts laid out for printing.                                      |
-| `card_case_body.stl`       | Carry case multi-color export: both case parts.                                                             |
-| `card_case_inlay.stl`      | Carry case multi-color export: the name and the contact QR code.                                            |
+| Path                    | Description                                                    |
+| ----------------------- | -------------------------------------------------------------- |
+| `business_card.scad`    | Card model.                                                    |
+| `card_holder.scad`      | Desk stand for a stack of cards.                               |
+| `card_case.scad`        | Carry case with a friction-fit lid.                            |
+| `contact.scad`          | Loads the personal details and builds the vCard for QR codes.  |
+| `personal.example.scad` | Fictional personal details.                                    |
+| `personal.scad`         | Your personal details. Ignored by git.                         |
+| `fonts/`                | Inter text fonts and Font Awesome icon fonts.                  |
+| `lib/qr.scad`           | [scadqr](https://github.com/xypwn/scadqr) QR code library.     |
 
-The STL files are generated, so `.gitignore` excludes them. To create them, see [Export STL files](#export-stl-files).
+Generated STL files are ignored by git.
 
-## Model geometry
+## Set up
 
-| Feature                    | Height above print bed            |
-| -------------------------- | --------------------------------- |
-| Back QR inlay              | 0 to 0.4 mm, flush with the back  |
-| Card surface (inner field) | 1.2 mm                            |
-| Raised text and QR code    | 1.8 mm (0.6 mm above the surface) |
-| Raised border              | 2.0 mm (0.8 mm above the surface) |
-
-The outer edges have a 0.4 mm chamfer on the top and bottom. The model prints face up without supports.
-
-## Customize the card
-
-Personal details live in `personal.scad`, which `.gitignore` excludes so that they never get committed. The model loads the fictional values from `personal.example.scad` first, and then overrides them with the values in `personal.scad`.
-
-1. Copy the example file:
+1. Install OpenSCAD 2021.01 or later.
+1. Copy the example details and edit the copy:
 
    ```sh
    cp personal.example.scad personal.scad
    ```
 
-1. Edit `personal.scad` with your details.
-1. Open `business_card.scad` in OpenSCAD 2021.01 or later.
-1. Optional: edit the layout and print parameters at the top of `business_card.scad`.
-1. Press **F5** to preview the card in color.
+1. Open `business_card.scad` and press **F5** to preview.
 
-If `personal.scad` doesn't exist, OpenSCAD shows the warning `Can't open include file 'personal.scad'` and renders the card with the fictional details.
+Without `personal.scad`, OpenSCAD warns `Can't open include file` and uses the fictional details. When you add a personal-details variable, add it to both files.
 
-If you add a personal-details variable, add it to both files, with a fictional value in `personal.example.scad`.
+## Customize the card
 
-Keep `qr_message` short. Longer messages produce a denser QR code with smaller squares, which are harder to print and scan. Set `qr_message = ""` to print an empty placeholder frame instead of a QR code.
+Layout and print parameters are at the top of each `.scad` file.
 
-If you change text sizes, check the preview to make sure that no text overlaps the border or the QR code.
+- To hide a text line, set its field to `""`.
+- To split the subtitle over several lines, use a list: `subtitle_text = ["Line 1", "Line 2"];`.
+- At `contact_size = 3.2`, a contact line fits up to about 68 mm. For longer lines, reduce `contact_size`.
+- The icons are [Font Awesome](https://fontawesome.com/search?ic=free) glyphs, because OpenSCAD can't extrude color emoji. To change an icon, set `email_icon` or `linkedin_icon` to a Unicode code point, such as `"\uf0e1"`.
 
-To show the subtitle on several lines, set `subtitle_text` to a list of strings, for example `["First line", "Second line"]`. There is room for two subtitle lines above the front QR code.
+### Back QR code
 
-The phone and email lines sit to the left of the QR code. Keep a gap of at least 3 mm between the end of the email line and the QR code, because QR scanners need a blank margin around the code. If you use a longer email address, reduce `contact_size`.
+The back QR code holds a vCard with `vcard_first_name`, `vcard_last_name`, `email_text`, and the optional `vcard_org`, `vcard_title`, and `vcard_url`.
 
-The phone and email icons come from the Font Awesome icon font, because OpenSCAD can't turn color emoji into 3D shapes. To use a different icon, set `phone_icon` or `email_icon` to the icon's Unicode code point from the [Font Awesome icon gallery](https://fontawesome.com/search?ic=free&s=solid), for example `"\uf3cd"` for a mobile phone.
+Each field makes the code denser. Keep each square at 0.8 mm or larger; square size is `back_qr_size` divided by the squares per side. With a name and email, the 45 mm code has 41 x 41 squares of 1.1 mm.
 
-### Back contact QR code
+The code prints behind a solid first layer, the cover. The cover gives the print a clean first layer and hides color specks.
 
-The back QR code contains a vCard 3.0 contact card. iPhone and Android cameras recognize it and offer to add the contact. The card uses these parameters from `personal.scad`:
-
-- `vcard_first_name` and `vcard_last_name`.
-- `phone_text` and `email_text`, the same values that the front of the card shows.
-- Optional `vcard_org`, `vcard_title`, and `vcard_url`. Leave a field empty to omit it.
-
-Each extra field makes the code denser. With name, phone, and email, the 45 mm code has 49 x 49 squares of about 0.9 mm each. Keep the squares at 0.8 mm or larger: square size is `back_qr_size` divided by the number of squares per side.
-
-The code is mirrored in the model so that it reads correctly from the back. The `back_qr_shrink` parameter makes the dark squares slightly smaller to compensate for the squashed first layer. Set `back_qr_enabled = false` to remove the back code.
-
-The back code is part of the multi-color export only.
+- Set `back_cover_thickness` to the slicer's initial layer height. The default is 0.2 mm.
+- Print the cover in translucent PLA for the best contrast, or in white PLA.
+- To print the code on the bottom face without a cover, set `back_cover_thickness = 0`.
+- To remove the code, set `back_qr_enabled = false`.
 
 ## Export STL files
 
-Run these commands from the project folder:
-
 ```sh
-# Single color
+# Card, single color
 openscad -o business_card.stl business_card.scad
 
-# Multi-color (AMS)
+# Card, multi-color parts
 openscad -D 'part="body"'   -o business_card_body.stl   business_card.scad
 openscad -D 'part="accent"' -o business_card_accent.stl business_card.scad
 openscad -D 'part="back"'   -o business_card_back.stl   business_card.scad
+openscad -D 'part="cover"'  -o business_card_cover.stl  business_card.scad
+
+# Desk stand
+openscad -o card_holder.stl card_holder.scad
+
+# Carry case, single color
+openscad -o card_case.stl card_case.scad
+
+# Carry case, multi-color parts
+openscad -D 'part="body"'  -o card_case_body.stl  card_case.scad
+openscad -D 'part="inlay"' -o card_case_inlay.stl card_case.scad
 ```
 
 ## Print with Bambu Studio
 
-Choose one of the following methods:
+### Settings
 
-- **Method A:** two colors with an AMS (Automatic Material System). The printer switches filament automatically. This is the only method that prints the back contact QR code.
-- **Method B:** two colors without an AMS. You swap the filament manually during a pause.
-- **Method C:** one color.
+Start from the **0.20mm Standard @BBL** profile with a 0.4 mm nozzle, and change these settings:
 
-For two-color prints, use a light filament for the card body and a dark filament for the text. Most phone cameras can't scan a light QR code on a dark background.
+| Setting                    | Value       | Location                     |
+| -------------------------- | ----------- | ---------------------------- |
+| Nozzle temperature         | 215–220 °C  | Filament                     |
+| Bed temperature            | 55–60 °C    | Filament, Textured PEI Plate |
+| Layer height               | 0.2 mm      | Process > Quality            |
+| Initial layer height       | 0.2 mm      | Process > Quality            |
+| Elephant foot compensation | 0.2 mm      | Process > Quality            |
+| Initial layer speed        | 30 mm/s     | Process > Speed              |
+| Initial layer infill speed | 40 mm/s     | Process > Speed              |
+| Supports                   | Off         | Process > Support            |
+| Brim type                  | No brim     | Process > Others             |
+| Prime tower                | On          | Process > Others             |
+| Flushing volume multiplier | 1.5         | Prepare > Flushing volumes   |
 
-### Recommended settings
+- A bed above 60 °C softens PLA and causes elephant foot, a lip around the bottom edge.
+- For adhesion, wash the plate with dish soap and water. If corners still lift, use glue stick or a **Mouse ear** brim.
+- The initial layer height must equal `back_cover_thickness`.
+- Use PLA for all parts. PETG bonds poorly to PLA.
 
-Start from the **0.20mm Standard** process profile for your printer and a 0.4 mm nozzle. With 0.20 mm layers, every height in the model falls exactly on a layer boundary.
+### Multi-color print (AMS)
 
-| Setting      | Value                                                                        |
-| ------------ | ---------------------------------------------------------------------------- |
-| Filament     | PLA                                                                          |
-| Layer height | 0.20 mm                                                                      |
-| Supports     | Off                                                                          |
-| Brim         | None (enable it only if the corners lift)                                    |
-| Build plate  | Textured PEI (recommended): its matte back reduces glare on the back QR code |
-
-### Method A: two colors with an AMS
-
-1. Export `business_card_body.stl`, `business_card_accent.stl`, and `business_card_back.stl`.
-1. Load the light filament and the dark filament into the AMS.
-1. In Bambu Studio, select **File** > **Import** > **Import 3MF/STL/STEP/SVG/OBJ/AMF**.
-1. Select all three STL files and click **Open**.
-1. When Bambu Studio asks whether to load the files as a single object with multiple parts, click **Yes**. The parts stay aligned with the card.
-1. In the **Prepare** tab, sync the filament list with the AMS so that the slots match the loaded filaments.
-1. In the object list, expand the object to show its three parts.
+1. Export the multi-color parts.
+1. In Bambu Studio, import all parts of one model together.
+1. When asked to load the files as a single object with multiple parts, click **Yes**.
 1. Assign filaments:
-   1. Set `business_card_body` to the light filament.
-   1. Set `business_card_accent` to the dark filament.
-   1. Set `business_card_back` to the dark filament.
-1. Optional: to print several cards, right-click the object, select **Clone**, and enter the number of copies.
-1. Click **Slice plate**.
-1. In the **Preview** tab, check the colors:
-   1. Drag the layer slider to the first layer and check that the back QR code shows the dark color.
-   1. Drag the slider to the top and check that the text and front QR code show the dark color.
-1. Click **Print plate**.
 
-The printer changes filament on the first two layers for the back code and on the top layers for the text. Each print has few filament changes, so the prime tower and filament waste stay small.
+   | Part                                                            | Filament             |
+   | --------------------------------------------------------------- | -------------------- |
+   | `business_card_body`, `card_case_body`                          | Light                |
+   | `business_card_accent`, `business_card_back`, `card_case_inlay` | Dark                 |
+   | `business_card_cover`                                           | Translucent or light |
 
-### Method B: two colors without an AMS
+1. Slice and check the layers in the **Preview** tab.
+1. Print.
 
-This method prints the single-color STL and pauses at the card surface so you can load the dark filament. Everything above the pause prints in the dark color, including the top of the border.
+QR codes need dark squares on a light background. To print several cards with fewer filament changes per card, right-click the card and select **Clone**.
 
-1. Export `business_card.stl`.
-1. In Bambu Studio, select **File** > **Import** > **Import 3MF/STL/STEP/SVG/OBJ/AMF** and open `business_card.stl`.
-1. Click **Slice plate**.
-1. In the **Preview** tab, drag the layer slider on the right to the layer at **1.40 mm**. This is the first layer above the card surface.
-1. Right-click the **+** icon on the slider and select **Add Pause**.
-1. Slice again and confirm that the pause marker is at 1.40 mm.
-1. Load the light filament and click **Print plate**.
-1. When the printer pauses, use the printer screen to unload the light filament and load the dark filament.
-1. Resume the print.
+### Two colors without an AMS
 
-### Method C: one color
+1. Slice `business_card.stl`.
+1. In the **Preview** tab, right-click the layer slider at 1.40 mm and select **Add Pause**.
+1. When the printer pauses, change to the dark filament.
 
-1. Export `business_card.stl`.
-1. In Bambu Studio, select **File** > **Import** > **Import 3MF/STL/STEP/SVG/OBJ/AMF** and open `business_card.stl`.
-1. Click **Slice plate**, and then click **Print plate**.
+The text and the top of the border print dark. This method can't print the back QR code.
 
-The text and QR code are raised, so they stay readable in one color. The QR code is usually not scannable without contrast.
+### One color
 
-## Test the QR codes
+Print `business_card.stl`, `card_holder.stl`, or `card_case.stl` with the settings above.
 
-After printing, scan both QR codes with a phone camera in good light. The back code should offer to add the contact. If a code doesn't scan, try these fixes:
+## Test the QR code
 
-- Use filaments with stronger contrast, such as white and black.
-- Shorten `qr_message`, or remove optional vCard fields, so that the code uses fewer, larger squares.
-- Set the error correction parameter to `"H"` if the content is short enough to keep the squares large.
-- Remove any stringing between the QR squares.
-- If dark squares on the back merge, increase `back_qr_shrink` to 0.1.
+Scan the code with a phone camera in good light. If it doesn't scan:
 
-## Card holder
+- Use higher-contrast filaments.
+- Remove optional vCard fields to get larger squares.
+- If dark squares merge, increase `back_qr_shrink` to 0.1.
 
-`card_holder.scad` is a desk stand for a stack of cards. The cards stand on their long edge and lean back 15 degrees. A low 5 mm front lip covers only the border of the front card, so its text and QR code stay visible.
+## Desk stand
 
-The default pocket holds 10 cards. Change `card_count` for a larger or smaller stack. If you change the card size in `business_card.scad`, also change `card_width`, `card_height`, and `card_thickness` in `card_holder.scad`.
+The stand holds 10 cards on their long edge, tilted back 15°. A 5 mm front lip keeps the front card readable.
 
-If the cards fit too tightly or too loosely, adjust these clearances:
-
-- `width_clearance`: the gap at each end of the cards. The default is 0.6 mm.
-- `stack_clearance`: the total gap in front of and behind the stack. The default is 1.5 mm.
-
-To export and print the holder:
-
-1. Export the STL:
-
-   ```sh
-   openscad -o card_holder.stl card_holder.scad
-   ```
-
-1. In Bambu Studio, import `card_holder.stl`. It's already in the print orientation, with the open pocket facing up.
-1. Use the [recommended settings](#recommended-settings) in one color. The holder prints without supports.
-1. Click **Slice plate**, and then click **Print plate**.
+- `card_count`: number of cards.
+- `width_clearance`, `stack_clearance`: fit of the cards.
+- `card_width`, `card_height`, `card_thickness`: must match `business_card.scad`.
 
 ## Carry case
 
-`card_case.scad` is a two-part case for carrying cards in a bag or purse. A lid slides over a lip on the base tray and holds by friction, so the outside is flush when the case is closed. With the default 10 cards, the case is 90 x 60 x 23.4 mm.
+The case holds 10 cards in a 90 x 60 x 23.4 mm box. The lid slides over a lip on the base and holds by friction. The cards stick out of the base, so you can grip them when the lid is off.
 
-The base walls are lower than the card stack. When you remove the lid, the top of the stack sticks out of the base so that you can grip the cards.
+In multi-color prints, the lid shows the name and the base shows the back QR code, as flush inlays.
 
-With an AMS, the case can also show two flush inlays. The lid shows `name_text`, and the bottom of the base shows the same contact QR code as the back of the card. Both outer faces print against the build plate, so the inlays are mirrored in the model and read correctly from outside.
-
-The case uses these parameters:
-
-- `card_count`: the number of cards that the case holds.
-- `fit_clearance`: the gap between the lip and the lid, per side. The default is 0.15 mm. Increase it if the lid is too tight, or decrease it if the lid falls off.
-- `base_fraction`: how much of the inner height is in the base. Lower values let more of the stack stick out.
-- `name_size`: the size of the name on the lid. With longer names, reduce it so that the name fits on the 90 mm lid.
-- `qr_size`: the size of the QR code on the base. The default is 45 mm.
-- `part`: set to `"assembled"` to preview the closed case with the inlays.
-
-### Print the case in one color
-
-The single-color export has no inlays.
-
-1. Export the STL. The file contains the base and the lid side by side, with the lid upside down:
-
-   ```sh
-   openscad -o card_case.stl card_case.scad
-   ```
-
-1. In Bambu Studio, import `card_case.stl`.
-1. Use the [recommended settings](#recommended-settings). Both parts print without supports.
-1. Click **Slice plate**, and then click **Print plate**.
-
-### Print the case with inlays (AMS)
-
-1. Export the two STLs:
-
-   ```sh
-   openscad -D 'part="body"'  -o card_case_body.stl  card_case.scad
-   openscad -D 'part="inlay"' -o card_case_inlay.stl card_case.scad
-   ```
-
-1. In Bambu Studio, select **File** > **Import** > **Import 3MF/STL/STEP/SVG/OBJ/AMF**, select both STL files, and click **Open**.
-1. When Bambu Studio asks whether to load the files as a single object with multiple parts, click **Yes**.
-1. Set `card_case_body` to the light filament and `card_case_inlay` to the dark filament.
-1. Use the [recommended settings](#recommended-settings), and click **Slice plate**.
-1. In the **Preview** tab, drag the layer slider to the first layer and check that the name and the QR code show the dark color.
-1. Click **Print plate**.
-
-The friction fit depends on your printer and filament. Before you print more cases, test the fit and adjust `fit_clearance` in steps of 0.05 mm.
+- `card_count`: number of cards.
+- `fit_clearance`: lid fit, per side. The default is 0.15 mm. Test one print, and adjust in steps of 0.05 mm.
+- `base_fraction`: share of the inner height in the base.
+- `name_size`, `qr_size`: inlay sizes.
+- `part = "assembled"`: previews the closed case.
 
 ## Licenses
 
-This project is licensed under the MIT license. See `LICENSE`.
+This project uses the MIT license. See `LICENSE`. Third-party files:
 
-The project includes these third-party files under their own licenses:
-
-- Inter font: SIL Open Font License 1.1. See `fonts/Inter-LICENSE.txt`.
-- Font Awesome Free font: SIL Open Font License 1.1. See `fonts/FontAwesome-LICENSE.txt`.
-- scadqr library: MIT license. See the header in `lib/qr.scad`.
+- Inter: SIL Open Font License 1.1. See `fonts/Inter-LICENSE.txt`.
+- Font Awesome Free: SIL Open Font License 1.1. See `fonts/FontAwesome-LICENSE.txt`.
+- scadqr: MIT license. See `lib/qr.scad`.
