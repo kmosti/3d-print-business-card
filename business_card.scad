@@ -5,6 +5,7 @@
 use <fonts/Inter-Bold.ttf>
 use <fonts/Inter-SemiBold.ttf>
 use <fonts/fa-solid-900.ttf>
+use <fonts/fa-brands-400.ttf>
 use <lib/qr.scad>
 include <contact.scad>
 
@@ -24,7 +25,7 @@ chamfer        = 0.4;   // 45-degree chamfer on top and bottom outer edges
 /* [Relief] */
 border_height = 0.8;    // border rises this much above the card surface
 border_width  = 2;
-text_height   = 0.6;    // text and QR frame rise this much above the card surface
+text_height   = 0.6;    // text rises this much above the card surface
 
 /* [Text] */
 name_font = "Inter:style=Bold";
@@ -41,24 +42,26 @@ subtitle_y  = title_y - 5;
 subtitle_line_spacing = 4.5;
 
 // OpenSCAD text() can't break lines, so a list of strings gives one line each.
-subtitle_lines = is_list(subtitle_text) ? subtitle_text : [subtitle_text];
-
-/* [QR code] */
-qr_error_correction = "M";  // [L, M, Q, H]
-qr_area_size        = 20;
-qr_margin           = 3;    // light gap to the border; acts as the QR quiet zone
-qr_frame_width      = 0.8;
+subtitle_lines = subtitle_text == "" ? [] : is_list(subtitle_text) ? subtitle_text : [subtitle_text];
 
 /* [Contact] */
 // Color emoji can't be extruded, so the icons are Font Awesome glyphs.
-icon_font  = "Font Awesome 6 Free:style=Solid";
-phone_icon = "\uf095";  // fa-phone
-email_icon = "\uf0e0";  // fa-envelope
+icon_font     = "Font Awesome 6 Free:style=Solid";
+brand_font    = "Font Awesome 6 Brands:style=Regular";
+email_icon    = "\uf0e0";  // fa-envelope
+linkedin_icon = "\uf08c";  // fa-linkedin
 
-contact_size = 2.5;     // keeps the email line clear of the QR quiet zone
-icon_gap     = 4;       // distance from icon start to text start
-email_y      = border_width + qr_margin + 1;  // text baselines
-phone_y      = email_y + 5;
+contact_size         = 3.2;  // the widest line that fits is about 68 mm at this size
+contact_line_spacing = 5.5;
+icon_width           = 4.6;  // icon column, as wide as the envelope at contact_size
+icon_text_gap        = 1.2;
+contact_y            = border_width + 5;  // baseline of the bottom line
+
+// Empty fields are skipped; lines stack upwards from contact_y in this order, top first.
+contact_lines = [
+    if (email_text != "")    [email_icon, icon_font, email_text],
+    if (linkedin_text != "") [linkedin_icon, brand_font, linkedin_text],
+];
 
 /* [Back contact QR code] */
 back_qr_enabled          = true;
@@ -126,43 +129,26 @@ module card_text() {
     x = border_width + text_margin;
     translate([x, name_y])     text(name_text,     size = name_size,     font = name_font);
     translate([x, title_y])    text(title_text,    size = title_size,    font = body_font);
-    for (i = [0 : len(subtitle_lines) - 1])
+    for (i = [0 : 1 : len(subtitle_lines) - 1])
         translate([x, subtitle_y - i * subtitle_line_spacing])
             text(subtitle_lines[i], size = subtitle_size, font = body_font);
-    contact_line(phone_icon, phone_text, phone_y);
-    contact_line(email_icon, email_text, email_y);
+    n = len(contact_lines);
+    for (i = [0 : 1 : n - 1])
+        contact_line(contact_lines[i], contact_y + (n - 1 - i) * contact_line_spacing);
 }
 
-module contact_line(icon, label, y) {
+module contact_line(line, y) {
     x = border_width + text_margin;
-    translate([x, y])            text(icon,  size = contact_size, font = icon_font);
-    translate([x + icon_gap, y]) text(label, size = contact_size, font = body_font);
-}
-
-module qr_area() {
-    translate([card_width - border_width - qr_margin - qr_area_size, border_width + qr_margin])
-        if (qr_message == "") {
-            difference() {
-                square(qr_area_size);
-                translate([qr_frame_width, qr_frame_width])
-                    square(qr_area_size - 2 * qr_frame_width);
-            }
-        } else {
-            // Grow modules slightly so diagonal neighbours fuse into one manifold solid.
-            offset(delta = 0.01)
-                qr(qr_message, error_correction = qr_error_correction,
-                   width = qr_area_size, height = qr_area_size, thickness = 0);
-        }
+    translate([x + icon_width / 2, y])         text(line[0], size = contact_size, font = line[1], halign = "center");
+    translate([x + icon_width + icon_text_gap, y]) text(line[2], size = contact_size, font = body_font);
 }
 
 module accent() {
     // Single-color export sinks the accent into the card so the union is one manifold solid.
     sink = part == "all" ? eps : 0;
     translate([0, 0, base_thickness - sink])
-        linear_extrude(text_height + sink) {
+        linear_extrude(text_height + sink)
             card_text();
-            qr_area();
-        }
 }
 
 if (part == "all" || part == "body")   color(body_color)   card_body();

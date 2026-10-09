@@ -1,14 +1,11 @@
 // Fictional example details. Copy this file to personal.scad (gitignored) and edit the copy.
 
-// Front text
+// Front text; "" hides a line
 name_text     = "JORDAN EXAMPLE";
 title_text    = "People & Culture";
-subtitle_text = ["Organisational Development", "for small teams"];  // a string, or a list for several lines
-phone_text    = "+47 000 00 000";
+subtitle_text = "";  // a string, or a list for several lines
 email_text    = "jordan@example.com";
-
-// Front QR code; "" shows an empty placeholder frame
-qr_message = "https://example.com";
+linkedin_text = "linkedin.com/in/jordanexample";
 
 // Back contact QR code (vCard); empty optional fields are omitted
 vcard_first_name = "Jordan";
