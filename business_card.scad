@@ -10,10 +10,11 @@ use <lib/qr.scad>
 include <contact.scad>
 
 /* [Export] */
-// all = single-color STL; body / accent / back = separate STLs for a multi-color print
-part = "all"; // [all, body, accent, back]
+// all = single-color STL; body / accent / back / cover = separate STLs for a multi-color print
+part = "all"; // [all, body, accent, back, cover]
 body_color   = "white";  // keep light: scanners need dark QR modules on a light background
 accent_color = "black";
+cover_color  = "white";  // translucent or natural PLA gives the most QR contrast
 
 /* [Card] */
 card_width     = 85;
@@ -67,8 +68,11 @@ contact_lines = [
 back_qr_enabled          = true;
 back_qr_size             = 45;
 back_qr_error_correction = "M";  // [L, M, Q, H]
-back_inlay_depth         = 0.4;  // two 0.2 mm layers, flush with the bottom face
-back_qr_shrink           = 0.05; // offsets first-layer squish so dark squares don't merge
+back_inlay_depth         = 0.4;  // two 0.2 mm layers
+back_qr_shrink           = 0.05; // keeps dark squares from merging
+// Solid first layer that the code is seen through; must equal the slicer's initial layer height.
+// 0 puts the code flush on the bottom face instead.
+back_cover_thickness     = 0.2;
 
 $fn = 64;
 
@@ -103,10 +107,23 @@ module card_body() {
                 rounded_rect(card_width - 2 * border_width,
                              card_height - 2 * border_width,
                              max(corner_radius - border_width, 0));
-        if (back_qr_enabled && (part != "all" || $preview))
-            translate([0, 0, -eps])
+        if (back_qr_enabled && (part != "all" || $preview)) {
+            translate([0, 0, back_cover_thickness - eps])
                 linear_extrude(back_inlay_depth + eps)
                     back_qr();
+            if (back_cover_thickness > 0) below_cover_top();
+        }
+    }
+}
+
+module below_cover_top() {
+    translate([-1, -1, -1]) cube([card_width + 2, card_height + 2, back_cover_thickness + 1]);
+}
+
+module back_cover() {
+    intersection() {
+        chamfered_slab();
+        below_cover_top();
     }
 }
 
@@ -121,7 +138,8 @@ module back_qr() {
 }
 
 module back_inlay() {
-    linear_extrude(back_inlay_depth) back_qr();
+    translate([0, 0, back_cover_thickness])
+        linear_extrude(back_inlay_depth) back_qr();
 }
 
 
@@ -156,3 +174,6 @@ if (part == "all" || part == "accent") color(accent_color) accent();
 // The single-color export omits the back code because it would be invisible in one color.
 if (back_qr_enabled && (part == "back" || (part == "all" && $preview)))
     color(accent_color) back_inlay();
+// Semi-transparent in the preview so the code shows through from below.
+if (back_qr_enabled && back_cover_thickness > 0 && (part == "cover" || (part == "all" && $preview)))
+    color(cover_color, $preview ? 0.6 : 1) back_cover();
