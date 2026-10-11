@@ -1,7 +1,8 @@
 // Carry case for a stack of business cards: a base tray and a lid that clicks onto it.
 // The lid slides over a lip on the base, so the outside is flush when closed. Bumps on the
 // lip snap into grooves in the lid, so the walls carry no load once closed and don't wear loose.
-// The lid top shows the name and the base bottom the contact QR code, as flush inlays for an AMS.
+// The lid top shows the name and the base bottom the contact QR code, as inlays for an AMS.
+// The inlays sit behind a solid first layer, the cover, so the first layer prints cleanly.
 // Print both parts as laid out (lid upside down), no supports.
 
 use <fonts/Inter-Bold.ttf>
@@ -9,12 +10,13 @@ use <lib/qr.scad>
 include <contact.scad>
 
 /* [Export] */
-// print = single color, no inlays; body / inlay = separate STLs for a two-color print;
+// print = single color, no inlays; body / inlay / cover = separate STLs for a multi-color print;
 // fit_test = only the rims of both parts, to tune the detent quickly
-part = "print"; // [print, body, inlay, assembled, fit_test]
+part = "print"; // [print, body, inlay, cover, assembled, fit_test]
 gap  = 10;      // between the parts in the print layout
 body_color  = "white";  // keep light: scanners need dark QR modules on a light background
 inlay_color = "black";
+cover_color = "white";  // translucent or natural PLA gives the most contrast
 
 /* [Cards] */
 card_width     = 85;
@@ -44,12 +46,14 @@ lip_height    = 4;
 base_fraction = 0.4;  // share of the inner height in the base; the rest of the stack sticks out to grip
 
 /* [Inlays] */
-inlay_depth    = 0.4;   // two 0.2 mm layers, flush with the outside
+inlay_depth    = 0.4;   // two 0.2 mm layers
 name_font      = "Inter:style=Bold";
 name_size      = 5;
 qr_size        = 45;
 qr_error_correction = "M";  // [L, M, Q, H]
-qr_shrink      = 0.05;  // offsets first-layer squish so dark squares don't merge
+qr_shrink      = 0.05;  // keeps dark squares from merging
+// Must equal the slicer's initial layer height; 0 puts the inlays flush on the outside.
+cover_thickness = 0.2;
 
 inner   = [card_width + 2 * card_clearance,
            card_height + 2 * card_clearance,
@@ -99,6 +103,7 @@ module base(pocket = false) {
         }
         translate([0, 0, plate]) linear_extrude(total_h) footprint(wall);
         if (pocket) inlay_pocket() base_inlay_2d();
+        if (pocket && cover_thickness > 0) below_cover();
     }
 }
 
@@ -111,6 +116,7 @@ module lid(pocket = false) {
             linear_extrude(lid_h) footprint(lip_inset - fit_clearance);
         to_lid_frame() detents(grow = detent_clearance);
         if (pocket) inlay_pocket() lid_inlay_2d();
+        if (pocket && cover_thickness > 0) below_cover();
     }
 }
 
@@ -151,11 +157,28 @@ module lid_inlay_2d() {
 }
 
 module inlay_pocket() {
-    translate([0, 0, -eps]) linear_extrude(inlay_depth + eps) children();
+    translate([0, 0, cover_thickness - eps]) linear_extrude(inlay_depth + eps) children();
 }
 
 module inlay() {
-    linear_extrude(inlay_depth) children();
+    translate([0, 0, cover_thickness]) linear_extrude(inlay_depth) children();
+}
+
+module below_cover() {
+    translate([-1, -1, -1]) cube([outer.x + 2, outer.y + 2, cover_thickness + 1]);
+}
+
+// Same for the base and the lid, because both have the same outer footprint and chamfer.
+module cover() {
+    intersection() {
+        chamfered_block(1);
+        below_cover();
+    }
+}
+
+// Semi-transparent in the preview so the inlays show through.
+module preview_cover() {
+    if (cover_thickness > 0) color(cover_color, 0.6) cover();
 }
 
 // Turned over like the real part; a mirror would also reverse the name.
@@ -163,6 +186,7 @@ module closed_lid() {
     translate([outer.x, 0, total_h]) rotate([0, 180, 0]) {
         color(body_color)  lid(pocket = true);
         color(inlay_color) inlay() lid_inlay_2d();
+        preview_cover();
     }
 }
 
@@ -172,9 +196,13 @@ if (part == "print") {
         base(pocket = $preview);
         translate(lid_offset) lid(pocket = $preview);
     }
-    if ($preview) color(inlay_color) {
-        inlay() base_inlay_2d();
-        translate(lid_offset) inlay() lid_inlay_2d();
+    if ($preview) {
+        color(inlay_color) {
+            inlay() base_inlay_2d();
+            translate(lid_offset) inlay() lid_inlay_2d();
+        }
+        preview_cover();
+        translate(lid_offset) preview_cover();
     }
 }
 if (part == "body") {
@@ -185,9 +213,14 @@ if (part == "inlay") {
     inlay() base_inlay_2d();
     translate(lid_offset) inlay() lid_inlay_2d();
 }
+if (part == "cover" && cover_thickness > 0) {
+    cover();
+    translate(lid_offset) cover();
+}
 if (part == "assembled") {
     color(body_color)  base(pocket = true);
     color(inlay_color) inlay() base_inlay_2d();
+    preview_cover();
     closed_lid();
 }
 if (part == "fit_test") {

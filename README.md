@@ -76,6 +76,7 @@ openscad -D 'part="fit_test"' -o card_case_fit_test.stl card_case.scad
 # Carry case, multi-color parts
 openscad -D 'part="body"'  -o card_case_body.stl  card_case.scad
 openscad -D 'part="inlay"' -o card_case_inlay.stl card_case.scad
+openscad -D 'part="cover"' -o card_case_cover.stl card_case.scad
 ```
 
 ## Print with Bambu Studio
@@ -100,7 +101,7 @@ Start from the **0.20mm Standard @BBL** profile with a 0.4 mm nozzle, and change
 
 - A bed above 60 °C softens PLA and causes elephant foot, a lip around the bottom edge.
 - For adhesion, wash the plate with dish soap and water. If corners still lift, use glue stick or a **Mouse ear** brim.
-- The initial layer height must equal `back_cover_thickness`.
+- The initial layer height must equal `back_cover_thickness` and the case's `cover_thickness`.
 - Use PLA for all parts. PETG bonds poorly to PLA.
 
 ### Multi-color print (AMS)
@@ -114,7 +115,7 @@ Start from the **0.20mm Standard @BBL** profile with a 0.4 mm nozzle, and change
    | --------------------------------------------------------------- | -------------------- |
    | `business_card_body`, `card_case_body`                          | Light                |
    | `business_card_accent`, `business_card_back`, `card_case_inlay` | Dark                 |
-   | `business_card_cover`                                           | Translucent or light |
+   | `business_card_cover`, `card_case_cover`                        | Translucent or light |
 
 1. Slice and check the layers in the **Preview** tab.
 1. Print.
@@ -153,7 +154,7 @@ The stand holds 10 cards on their long edge, tilted back 15°. A 5 mm front lip 
 
 The case holds 10 cards in a 90 x 60 x 23.4 mm box. The lid slides over a lip on the base and clicks into place: a bump on each long side of the lip snaps into a groove in the lid. The cards stick out of the base, so you can grip them when the lid is off.
 
-In multi-color prints, the lid shows the name and the base shows the back QR code, as flush inlays.
+In multi-color prints, the lid shows the name and the base shows the back QR code. Like the card's back QR code, both inlays print behind a cover layer, set by `cover_thickness`.
 
 - `card_count`: number of cards.
 - `detent_height`: how far each bump sticks out. The default is 0.4 mm. Raise it for a firmer click, or lower it if the lid is hard to close.
