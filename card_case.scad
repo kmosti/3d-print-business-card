@@ -1,5 +1,6 @@
-// Carry case for a stack of business cards: a base tray and a friction-fit lid.
-// The lid slides over a lip on the base, so the outside is flush when closed.
+// Carry case for a stack of business cards: a base tray and a lid that clicks onto it.
+// The lid slides over a lip on the base, so the outside is flush when closed. Bumps on the
+// lip snap into grooves in the lid, so the walls carry no load once closed and don't wear loose.
 // The lid top shows the name and the base bottom the contact QR code, as flush inlays for an AMS.
 // Print both parts as laid out (lid upside down), no supports.
 
@@ -8,8 +9,9 @@ use <lib/qr.scad>
 include <contact.scad>
 
 /* [Export] */
-// print = single color, no inlays; body / inlay = separate STLs for a two-color print
-part = "print"; // [print, body, inlay, assembled]
+// print = single color, no inlays; body / inlay = separate STLs for a two-color print;
+// fit_test = only the rims of both parts, to tune the detent quickly
+part = "print"; // [print, body, inlay, assembled, fit_test]
 gap  = 10;      // between the parts in the print layout
 body_color  = "white";  // keep light: scanners need dark QR modules on a light background
 inlay_color = "black";
@@ -23,7 +25,15 @@ card_count     = 10;
 /* [Fit] */
 card_clearance  = 0.5;   // around the stack, per side
 stack_clearance = 1;     // above the stack
-fit_clearance   = 0.15;  // between lip and lid, per side; raise if the lid is too tight
+fit_clearance   = 0.2;   // between lip and lid, per side; the detent holds the lid, not friction
+
+/* [Detent] */
+detent_height    = 0.4;  // how far each bump sticks out; raise for a firmer click
+detent_length    = 20;   // along each long side
+detent_flat      = 0.4;  // flat top of the bump; the flanks are 45 degrees
+detent_clearance = 0.1;  // extra room in the groove around the bump
+lead_in          = 0.4;  // chamfer on top of the lip, so the lid starts easily
+fit_test_margin  = 2;    // full wall kept below the rim in the fit test
 
 /* [Case] */
 wall          = 2;    // five 0.4 mm lines
@@ -49,12 +59,16 @@ total_h = inner.z + 2 * plate;
 split_z = plate + inner.z * base_fraction;
 lid_h   = total_h - split_z;
 lip_t   = wall / 2;
+lip_inset = wall - lip_t;  // from the outside to the outer face of the lip
 lip_gap = 0.3;  // keeps the lip from bottoming out, so the lid seats on the base rim
 eps     = 0.01;
 lid_offset = [outer.x + gap, 0, 0];
+detent_z   = split_z + lip_height / 2;
 
 assert(corner_radius > wall, "corner_radius must exceed wall");
 assert(lid_h - lip_height - lip_gap > plate, "lip_height too large for the lid");
+assert(detent_height > fit_clearance, "detent_height must exceed fit_clearance, or the lid won't click");
+assert(2 * detent_height + detent_flat < lip_height - lead_in, "detent too tall for the lip");
 
 $fn = 64;
 
@@ -77,7 +91,11 @@ module base(pocket = false) {
     difference() {
         union() {
             chamfered_block(split_z);
-            linear_extrude(split_z + lip_height) footprint(wall - lip_t);
+            hull() {
+                linear_extrude(split_z + lip_height - lead_in) footprint(lip_inset);
+                linear_extrude(split_z + lip_height) footprint(lip_inset + lead_in);
+            }
+            detents();
         }
         translate([0, 0, plate]) linear_extrude(total_h) footprint(wall);
         if (pocket) inlay_pocket() base_inlay_2d();
@@ -90,9 +108,30 @@ module lid(pocket = false) {
         chamfered_block(lid_h);
         translate([0, 0, plate]) linear_extrude(lid_h) footprint(wall);
         translate([0, 0, lid_h - lip_height - lip_gap])
-            linear_extrude(lid_h) footprint(wall - lip_t - fit_clearance);
+            linear_extrude(lid_h) footprint(lip_inset - fit_clearance);
+        to_lid_frame() detents(grow = detent_clearance);
         if (pocket) inlay_pocket() lid_inlay_2d();
     }
+}
+
+// Bumps on the outer face of the lip, centered on both long sides; grow > 0 gives the grooves.
+// The 45-degree flanks and tapered ends print without supports and let the lid slide over.
+module detents(grow = 0) {
+    h = detent_height + grow;
+    for (side = [[lip_inset, -1], [outer.y - lip_inset, 1]])
+        translate([outer.x / 2, side[0], detent_z])
+            scale([1, side[1], 1])
+                hull() {
+                    translate([-detent_length / 2 - grow, -lip_t, -h - detent_flat / 2])
+                        cube([detent_length + 2 * grow, lip_t, 2 * h + detent_flat]);
+                    translate([-detent_length / 2 + h - grow, 0, -detent_flat / 2 - grow])
+                        cube([detent_length - 2 * h + 2 * grow, h, detent_flat + 2 * grow]);
+                }
+}
+
+// Maps the closed-case frame onto the lid's print orientation; inverse of closed_lid().
+module to_lid_frame() {
+    rotate([0, 180, 0]) translate([-outer.x, 0, -total_h]) children();
 }
 
 // Both inlays face the bed, so they are mirrored to read correctly from outside.
@@ -150,4 +189,17 @@ if (part == "assembled") {
     color(body_color)  base(pocket = true);
     color(inlay_color) inlay() base_inlay_2d();
     closed_lid();
+}
+if (part == "fit_test") {
+    base_cut = split_z - fit_test_margin;
+    lid_cut  = lid_h - lip_height - lip_gap - fit_test_margin;
+    translate([0, 0, -base_cut]) above(base_cut) base();
+    translate(lid_offset) translate([0, 0, -lid_cut]) above(lid_cut) lid();
+}
+
+module above(z) {
+    intersection() {
+        children();
+        translate([-1, -1, z]) cube([outer.x + 2, outer.y + 2, total_h]);
+    }
 }

@@ -8,7 +8,7 @@ Parametric OpenSCAD models for an 85 x 55 mm business card, a desk stand, and a 
 | ----------------------- | -------------------------------------------------------------- |
 | `business_card.scad`    | Card model.                                                    |
 | `card_holder.scad`      | Desk stand for a stack of cards.                               |
-| `card_case.scad`        | Carry case with a friction-fit lid.                            |
+| `card_case.scad`        | Carry case with a snap-on lid.                                 |
 | `contact.scad`          | Loads the personal details and builds the vCard for QR codes.  |
 | `personal.example.scad` | Fictional personal details.                                    |
 | `personal.scad`         | Your personal details. Ignored by git.                         |
@@ -69,6 +69,9 @@ openscad -o card_holder.stl card_holder.scad
 
 # Carry case, single color
 openscad -o card_case.stl card_case.scad
+
+# Carry case, rims only, to test the lid fit
+openscad -D 'part="fit_test"' -o card_case_fit_test.stl card_case.scad
 
 # Carry case, multi-color parts
 openscad -D 'part="body"'  -o card_case_body.stl  card_case.scad
@@ -148,15 +151,18 @@ The stand holds 10 cards on their long edge, tilted back 15°. A 5 mm front lip 
 
 ## Carry case
 
-The case holds 10 cards in a 90 x 60 x 23.4 mm box. The lid slides over a lip on the base and holds by friction. The cards stick out of the base, so you can grip them when the lid is off.
+The case holds 10 cards in a 90 x 60 x 23.4 mm box. The lid slides over a lip on the base and clicks into place: a bump on each long side of the lip snaps into a groove in the lid. The cards stick out of the base, so you can grip them when the lid is off.
 
 In multi-color prints, the lid shows the name and the base shows the back QR code, as flush inlays.
 
 - `card_count`: number of cards.
-- `fit_clearance`: lid fit, per side. The default is 0.15 mm. Test one print, and adjust in steps of 0.05 mm.
+- `detent_height`: how far each bump sticks out. The default is 0.4 mm. Raise it for a firmer click, or lower it if the lid is hard to close.
+- `fit_clearance`: gap between the lip and the lid, per side. The default is 0.2 mm. Keep it below `detent_height`.
 - `base_fraction`: share of the inner height in the base.
 - `name_size`, `qr_size`: inlay sizes.
 - `part = "assembled"`: previews the closed case.
+
+To tune the click, print `card_case_fit_test.stl`. It contains only the rims of the base and the lid, and prints in a few minutes. Adjust `detent_height` in steps of 0.05 mm.
 
 ## Licenses
 
