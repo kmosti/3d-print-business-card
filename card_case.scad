@@ -74,7 +74,7 @@ assert(lid_h - lip_height - lip_gap > plate, "lip_height too large for the lid")
 assert(detent_height > fit_clearance, "detent_height must exceed fit_clearance, or the lid won't click");
 assert(2 * detent_height + detent_flat < lip_height - lead_in, "detent too tall for the lip");
 
-$fn = 64;
+$fn = 128;
 
 module rounded_rect(w, h, r) {
     offset(r = r) offset(delta = -r) square([w, h]);
