@@ -11,7 +11,7 @@ include <contact.scad>
 
 /* [Export] */
 // print = single color, no inlays; body / inlay / cover = separate STLs for a multi-color print;
-// fit_test = only the rims of both parts, to tune the detent quickly
+// fit_test = floor, top, and rims of both parts, to tune the detent quickly
 part = "print"; // [print, body, inlay, cover, assembled, fit_test]
 gap  = 10;      // between the parts in the print layout
 body_color  = "white";  // keep light: scanners need dark QR modules on a light background
@@ -27,7 +27,7 @@ card_count     = 10;
 /* [Fit] */
 card_clearance  = 0.5;   // around the stack, per side
 stack_clearance = 1;     // above the stack
-fit_clearance   = 0.2;   // between lip and lid, per side; the detent holds the lid, not friction
+fit_clearance   = 0.1;   // between lip and lid, per side; the detent holds the lid, not friction
 
 /* [Detent] */
 detent_height    = 0.4;  // how far each bump sticks out; raise for a firmer click
@@ -224,10 +224,21 @@ if (part == "assembled") {
     closed_lid();
 }
 if (part == "fit_test") {
-    base_cut = split_z - fit_test_margin;
-    lid_cut  = lid_h - lip_height - lip_gap - fit_test_margin;
-    translate([0, 0, -base_cut]) above(base_cut) base();
-    translate(lid_offset) translate([0, 0, -lid_cut]) above(lid_cut) lid();
+    squashed(split_z - fit_test_margin) base();
+    translate(lid_offset) squashed(lid_h - lip_height - lip_gap - fit_test_margin) lid();
+}
+
+// Keeps the floor and the rim but drops the wall between them, so the test flexes like the full part.
+module squashed(cut) {
+    below(plate) children();
+    translate([0, 0, plate - cut]) above(cut) children();
+}
+
+module below(z) {
+    intersection() {
+        children();
+        translate([-1, -1, -1]) cube([outer.x + 2, outer.y + 2, z + 1]);
+    }
 }
 
 module above(z) {
