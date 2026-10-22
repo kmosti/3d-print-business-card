@@ -2,6 +2,20 @@
 
 Parametric OpenSCAD models for an 85 x 55 mm business card, a desk stand, and a carry case. The card has raised text and an optional contact QR code on the back. Scanning the code offers to save the contact on the phone.
 
+## Previews
+
+| Card front                                  | Card back                                 |
+| ------------------------------------------- | ----------------------------------------- |
+| ![Card front](previews/card_front.png)      | ![Card back with QR code](previews/card_back.png) |
+
+| Carry case                                  | Carry case, outside                       |
+| ------------------------------------------- | ----------------------------------------- |
+| ![Carry case base and lid](previews/case_body_side.png) | ![Carry case lid and bottom](previews/case_body_back.png) |
+
+| Desk stand                                  |
+| ------------------------------------------- |
+| ![Desk stand](previews/holder.png)          |
+
 ## Files
 
 | Path                    | Description                                                    |
@@ -14,6 +28,7 @@ Parametric OpenSCAD models for an 85 x 55 mm business card, a desk stand, and a 
 | `personal.scad`         | Your personal details. Ignored by git.                         |
 | `fonts/`                | Inter text fonts and Font Awesome icon fonts.                  |
 | `lib/qr.scad`           | [scadqr](https://github.com/xypwn/scadqr) QR code library.     |
+| `previews/`             | Rendered preview images.                                       |
 
 Generated STL files are ignored by git.
 
