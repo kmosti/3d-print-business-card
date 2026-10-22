@@ -70,7 +70,7 @@ openscad -o card_holder.stl card_holder.scad
 # Carry case, single color
 openscad -o card_case.stl card_case.scad
 
-# Carry case, rims only, to test the lid fit
+# Carry case, floor, top, and rims only, to test the lid fit
 openscad -D 'part="fit_test"' -o card_case_fit_test.stl card_case.scad
 
 # Carry case, multi-color parts
@@ -158,12 +158,12 @@ In multi-color prints, the lid shows the name and the base shows the back QR cod
 
 - `card_count`: number of cards.
 - `detent_height`: how far each bump sticks out. The default is 0.4 mm. Raise it for a firmer click, or lower it if the lid is hard to close.
-- `fit_clearance`: gap between the lip and the lid, per side. The default is 0.2 mm. Keep it below `detent_height`.
+- `fit_clearance`: gap between the lip and the lid, per side. The default is 0.1 mm. Keep it below `detent_height`.
 - `base_fraction`: share of the inner height in the base.
 - `name_size`, `qr_size`: inlay sizes.
 - `part = "assembled"`: previews the closed case.
 
-To tune the click, print `card_case_fit_test.stl`. It contains only the rims of the base and the lid, and prints in a few minutes. Adjust `detent_height` in steps of 0.05 mm.
+To tune the fit, print `card_case_fit_test.stl`. It contains the floor and rim of the base, and the top and rim of the lid, and prints in a few minutes. Adjust `fit_clearance` or `detent_height` in steps of 0.05 mm.
 
 ## Licenses
 
