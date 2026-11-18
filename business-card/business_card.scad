@@ -2,11 +2,11 @@
 // Print face up, no supports. Overall thickness is card_thickness at the border;
 // the inner field is thinner (card_thickness - border_height) to save material.
 
-use <fonts/Inter-Bold.ttf>
-use <fonts/Inter-SemiBold.ttf>
-use <fonts/fa-solid-900.ttf>
-use <fonts/fa-brands-400.ttf>
-use <lib/qr.scad>
+use <../fonts/Inter-Bold.ttf>
+use <../fonts/Inter-SemiBold.ttf>
+use <../fonts/fa-solid-900.ttf>
+use <../fonts/fa-brands-400.ttf>
+use <../lib/qr.scad>
 include <contact.scad>
 
 /* [Export] */

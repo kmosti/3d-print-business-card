@@ -1,5 +1,12 @@
 # ignore generated stl files
 *.stl
 
-# personal details; see personal.example.scad
+# personal / private parameter files (e.g. business-card/personal.scad from personal.example.scad)
 personal.scad
+*.local.scad
+*.private.scad
+
+# private / custom logo SVGs (use logo.example.svg as the tracked generic default)
+Bouvet_Logo_Colossus.svg
+*.local.svg
+*.private.svg
