@@ -5,8 +5,8 @@
 // The inlays sit behind a solid first layer, the cover, so the first layer prints cleanly.
 // Print both parts as laid out (lid upside down), no supports.
 
-use <fonts/Inter-Bold.ttf>
-use <lib/qr.scad>
+use <../fonts/Inter-Bold.ttf>
+use <../lib/qr.scad>
 include <contact.scad>
 
 /* [Export] */
